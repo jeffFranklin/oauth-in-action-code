@@ -7,10 +7,12 @@ This is a fork of Justin Richer's repository, with the readme ripped out and rep
 ### node / npm setup / installation
 don't use macports or any of those to install node. rather, just go to https://nodejs.org and download and install the latest version. I prefer avoiding sudo (admin mode) if possible. For instance, in mac, you could create a `local/bin` directory off of your home directory, and put node and npm there. From your terminal, you could run `export PATH=$PATH:$HOME/local/bin` and your npm commands will then work. Add that command to your `~/.bash_profile` and it will work that way forever.
 ### getting this repo
-`git clone https://github.com/jeffFranklin/oauth-in-action-code`, or you can use the original as `git clone https://github.com/oauthinaction/oauth-in-action-code`. Having cloned you can `cd oauth-in-action-code` to work within this repo.
+`git clone https://github.com/jeffFranklin/oauth-in-action-code`, or you can use the original as `git clone https://github.com/oauthinaction/oauth-in-action-code`. My fork will have all the exercises completed, while the original will be pristine. Having cloned you can `cd oauth-in-action-code` to work within this repo.
 ### first exercise setup
 ```
 cd exercises/ch-3-ex-1
 npm install
+# edit client.js to add your client id and secret
+node client.js &  # the & puts the command in the background. don't add this on windows
+node authorizationServer.js
 ```
-
