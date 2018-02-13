@@ -34,7 +34,7 @@ var client = {
 
 var protectedResource = 'http://localhost:9002/resource';
 
-var state = null;
+var state = randomstring.generate();
 
 var access_token = null;
 var scope = null;
@@ -47,13 +47,18 @@ app.get('/authorize', function(req, res){
 	const queryParams = {
 	    response_type: 'code',
         client_id: client.client_id,
-        redirect_uri: client.redirect_uris[0]
+        redirect_uri: client.redirect_uris[0],
+        state
 	};
     const authorizeUrl = buildUrl(authServer.authorizationEndpoint, queryParams);
     res.redirect(authorizeUrl);
 });
 
 app.get('/callback', function(req, res){
+    if (req.query.state !== state){
+        res.render('error', {error: 'state value did not match'});
+        return;
+    }
     const form_data = qs.stringify({
         grant_type: 'authorization_code',
         code: req.query.code,
@@ -72,6 +77,7 @@ app.get('/callback', function(req, res){
 	// update globals
 	access_token = tokenBody.access_token;
     scope = tokenBody.scope;
+    state = randomstring.generate();
 	res.render('index', {access_token, scope});
 });
 
