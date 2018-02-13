@@ -133,22 +133,30 @@ app.get('/fetch_resource', function(req, res) {
 		res.render('data', {resource: body});
 		return;
 	} else {
-		/*
-		 * Instead of always returning an error like we do here, refresh the access token if we have a refresh token
-		 */
-		console.log("resource status error code " + resource.statusCode);
-		res.render('error', {error: 'Unable to fetch resource. Status ' + resource.statusCode});
+		access_token = null;
+		if(refresh_token)
+			return refreshAccessToken(req, res);
+		else
+			return res.render('error', {error: resource.statusCode});
 	}
-	
-	
 });
 
 var refreshAccessToken = function(req, res) {
-
-	/*
-	 * Use the refresh token to get a new access token
-	 */
-	
+	const form_data = qs.stringify({
+		grant_type: 'refresh_token',
+		refresh_token
+	});
+	const encodedCreds = encodeClientCredentials(client.client_id, client.client_secret);
+	const headers = {
+		'Content-Type': 'application/x-www-form-urlencoded',
+		'Authorization' : `Basic ${encodedCreds}`
+	};
+	const tokenResponse = request('POST', authServer.tokenEndpoint, {body: form_data, headers});
+	const tokenBody = JSON.parse(tokenResponse.getBody());
+	access_token = tokenBody.access_token;
+	if(tokenBody.refresh_token)
+		refresh_token = tokenBody.refresh_token;
+	return res.redirect('/fetch_resource');
 };
 
 var buildUrl = function(base, options, hash) {
