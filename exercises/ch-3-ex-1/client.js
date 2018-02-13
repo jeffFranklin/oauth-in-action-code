@@ -82,12 +82,20 @@ app.get('/callback', function(req, res){
 });
 
 app.get('/fetch_resource', function(req, res) {
-
-	/*
-	 * Use the access token to call the resource server
-	 */
-	
+    if (!access_token)
+        return errorPage(res, 'Missing access token');
+    const headers = {'Authorization': `Bearer ${access_token}`};
+    const resource = request('POST', protectedResource, {headers});
+    if (resource.statusCode < 200 || resource.statusCode >= 300)
+        return errorPage(res, `Server returned unexpected error code: ${resource.statusCode}`);
+    const body = JSON.parse(resource.getBody());
+    return res.render('data', {resource: body});
 });
+
+function errorPage(res, message) {
+    res.render('error', {error: message});
+    return;
+}
 
 var buildUrl = function(base, options, hash) {
 	var newUrl = url.parse(base, true);
