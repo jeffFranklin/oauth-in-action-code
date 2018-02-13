@@ -44,19 +44,35 @@ app.get('/', function (req, res) {
 });
 
 app.get('/authorize', function(req, res){
-
-	/*
-	 * Send the user to the authorization server
-	 */
-	
+	const queryParams = {
+	    response_type: 'code',
+        client_id: client.client_id,
+        redirect_uri: client.redirect_uris[0]
+	};
+    const authorizeUrl = buildUrl(authServer.authorizationEndpoint, queryParams);
+    res.redirect(authorizeUrl);
 });
 
 app.get('/callback', function(req, res){
+    const form_data = qs.stringify({
+        grant_type: 'authorization_code',
+        code: req.query.code,
+        redirect_uri: client.redirect_uris[0]
+    });
+    const creds = encodeClientCredentials(client.client_id, client.client_secret);
+    const headers = {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Authorization': `Basic ${creds}`
+    };
+    const tokenRequest = {body: form_data, headers};
+	const tokenResponse = request('POST', authServer.tokenEndpoint, tokenRequest);
+	const tokenBody = JSON.parse(tokenResponse.getBody());
+	console.log(tokenBody);
 
-	/*
-	 * Parse the response from the authorization server and get a token
-	 */
-	
+	// update globals
+	access_token = tokenBody.access_token;
+    scope = tokenBody.scope;
+	res.render('index', {access_token, scope});
 });
 
 app.get('/fetch_resource', function(req, res) {
